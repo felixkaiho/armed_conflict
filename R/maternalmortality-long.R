@@ -27,3 +27,6 @@ subdat <- subdat %>%
 longdat <- subdat %>%
   pivot_longer(c(`2000`:`2019`), names_to = "Year", values_to = "MatMor")
 longdat$Year <- as.numeric(longdat$Year)
+
+# Output results to a different sub-folder
+write.csv(longdat,here("data", "clean-maternalmortality.csv"), row.names = FALSE)
