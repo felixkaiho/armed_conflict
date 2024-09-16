@@ -22,7 +22,7 @@ subdat <- subdat %>%
 
 widedat <- subdat %>%
   group_by(Year, ISO) %>%
-  summarise(drought = sum(drought), earthquake = sum(earthquake))
+  summarise(drought = max(drought), earthquake = max(earthquake))
 
 # Output results to a different sub-folder
 write.csv(widedat, here("data", "clean-disaster.csv"), row.names = FALSE)
