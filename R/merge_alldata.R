@@ -14,8 +14,12 @@ source(here("R", "create_maternalmortality.R"))
 source(here("R", "create_disaster.R"))
 source(here("R", "derive_armedconflict.R"))
 
-mergealldata <- merge(merge(merge(worldbankdata, cleandisasterdata, by = c("ISO", "Year"), all = TRUE), 
-                         armedconflictdata, by = c("ISO", "Year"), all = TRUE), 
-                   covariatesdata, by = c("ISO", "Year"), all = TRUE)
+data_list <- list(worldbankdata, cleandisasterdata, armedconflictdata, covariatesdata)
 
-write.csv(mergealldata, here("data", "mergealldata.csv"), row.names = FALSE)
+mergealldata <- Reduce(function(x, y) merge(x, y, by = c("ISO", "Year"), all = TRUE), data_list)
+
+# Delete all rows that have NA for ISO.
+
+mergealldata_clean <- mergealldata[!is.na(mergealldata$ISO),]
+
+write.csv(mergealldata_clean, here("data", "mergealldata.csv"), row.names = FALSE)
