@@ -1,6 +1,6 @@
 #-----------------------------------
 # Author: Felix Ho
-# Last updated: 2024-9-21
+# Last updated: 2024-9-23
 #-----------------------------------
 # In-Class Assignment 2 (2024/9/16)
 
@@ -31,43 +31,11 @@ longdat$Year <- as.numeric(longdat$Year)
 #----------------------------------
 # In-Class Assignment 3 (2024/9/23)
 
-makelong_old <- function(x){
-  rawdat_old <- read.csv(here("original", x), header = TRUE) %>%
+makelong <- function(x){
+  rawdat <- read.csv(here("original", x), header = TRUE) %>%
     select(Country.Name, X2000:X2019) %>%
     rename_with(~ str_remove(., "^X"), starts_with("X")) %>%
     pivot_longer(c(`2000`:`2019`), names_to = "Year", values_to = x) %>%
-    rename(Country_name = Country.Name) %>% 
-    mutate(Year = as.numeric(Year))
-}
-
-maternalmortality_old <- makelong_old("maternalmortality.csv")
-infantmortality_old <- makelong_old("infantmortality.csv")
-neonatalmortality_old <- makelong_old("neonatalmortality.csv")
-under5mortality_old <- makelong_old("under5mortality.csv")
-
-worldbankdata_old <- list(maternalmortality_old, infantmortality_old, neonatalmortality_old, under5mortality_old) %>%
-  reduce(full_join) %>%
-  rename(Maternal_mortality_rate = maternalmortality.csv, 
-         Infant_mortality_rate = infantmortality.csv,
-         Neonatal_mortality_rate = neonatalmortality.csv,
-         Under_5_mortality_rate = under5mortality.csv)
-
-# Add the ISO-3 country code variable to the new data set, call the new variable
-# ISO, and remove the Country_name variable.
-
-library(countrycode)
-worldbankdata_old$ISO <- countrycode(worldbankdata_old$Country_name, origin = "country.name", destination = "iso3c")
-
-# Note: Some countries do not have ISO-3 country codes if we use the countrycode() function.
-
-# New code that does not follow the instructions on ISO-3 country codes:
-
-makelong <- function(x){
-  rawdat <- read.csv(here("original", x), header = TRUE) %>%
-    select(Country.Code, X2000:X2019) %>%
-    rename_with(~ str_remove(., "^X"), starts_with("X")) %>%
-    pivot_longer(c(`2000`:`2019`), names_to = "Year", values_to = x) %>%
-    rename(ISO = Country.Code) %>% 
     mutate(Year = as.numeric(Year))
 }
 
@@ -82,3 +50,12 @@ worldbankdata <- list(maternalmortality, infantmortality, neonatalmortality, und
          Infant_mortality_rate = infantmortality.csv,
          Neonatal_mortality_rate = neonatalmortality.csv,
          Under_5_mortality_rate = under5mortality.csv)
+
+# Add the ISO-3 country code variable to the new data set, call the new variable
+# ISO, and remove the Country_name variable. Some countries do not have ISO-3
+# country codes if we use the countrycode() function. That is fine because these
+# coutries will be removed in the final analysis.
+
+library(countrycode)
+worldbankdata$ISO <- countrycode(worldbankdata$Country.Name, origin = "country.name", destination = "iso3c")
+worldbankdata <- subset(worldbankdata, select = -Country.Name)
