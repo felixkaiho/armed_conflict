@@ -8,13 +8,14 @@ library(here)
 library(tidyverse)
 library(stringr) 
 
-rawmaternal <- read.csv(here("original", "maternalmortality.csv"), header = TRUE)
+rawmaternal <- read.csv(here("original", "maternalmortality.csv"), 
+                        header = TRUE)
 
-# subset data
+# Subset data.
 
 submaternal <- select(rawmaternal, Country.Name, X2000:X2019)
 
-#convert to long format
+# Convert to long format.
 
 #rename_with() is a function from dplyr that allows you to modify column names
 #based on a function. str_remove(., "^X") from stringr removes the X at the
@@ -25,37 +26,46 @@ submaternal <- select(rawmaternal, Country.Name, X2000:X2019)
 submaternal <- submaternal %>%
   rename_with(~ str_remove(., "^X"), starts_with("X")) 
 longdat <- submaternal %>%
-  pivot_longer(c(`2000`:`2019`), names_to = "Year", values_to = "MatMor")
-longdat$Year <- as.numeric(longdat$Year)
+  pivot_longer(c(`2000`:`2019`), names_to = "year", values_to = "matmor")
+longdat$Year <- as.numeric(longdat$year)
 
 #----------------------------------
 # In-Class Assignment 3 (2024/9/23)
 
-makelong <- function(x){
+# Create a function that performs the same procedure on the maternal mortality,
+# infant mortality, neonatal mortality, and under 5 mortality data.
+
+makelong <- function(x, y){
   rawdat <- read.csv(here("original", x), header = TRUE) %>%
     select(Country.Name, X2000:X2019) %>%
     rename_with(~ str_remove(., "^X"), starts_with("X")) %>%
-    pivot_longer(c(`2000`:`2019`), names_to = "Year", values_to = x) %>%
-    mutate(Year = as.numeric(Year))
+    pivot_longer(c(`2000`:`2019`), names_to = "year", values_to = y) %>%
+    mutate(year = as.numeric(year))
 }
 
-maternalmortality <- makelong("maternalmortality.csv")
-infantmortality <- makelong("infantmortality.csv")
-neonatalmortality <- makelong("neonatalmortality.csv")
-under5mortality <- makelong("under5mortality.csv")
+# Apply the function to the four data sets and create four new data sets. 
 
-worldbankdata <- list(maternalmortality, infantmortality, neonatalmortality, under5mortality) %>%
-  reduce(full_join) %>%
-  rename(Maternal_mortality_rate = maternalmortality.csv, 
-         Infant_mortality_rate = infantmortality.csv,
-         Neonatal_mortality_rate = neonatalmortality.csv,
-         Under_5_mortality_rate = under5mortality.csv)
+maternalmortality <- makelong(x = "maternalmortality.csv", 
+                              y = "matmor")
+infantmortality <- makelong(x = "infantmortality.csv", 
+                            y = "infmor")
+neonatalmortality <- makelong(x = "neonatalmortality.csv", 
+                              y =  "neomor")
+under5mortality <- makelong(x = "under5mortality.csv", 
+                            y = "un5mor")
+
+# Merge the four data sets into one new data set.
+
+worldbankdata <- list(maternalmortality, infantmortality, neonatalmortality, 
+                      under5mortality) %>%
+  reduce(full_join, by = c("Country.Name", "year")) 
 
 # Add the ISO-3 country code variable to the new data set, call the new variable
-# ISO, and remove the Country_name variable. Some countries do not have ISO-3
+# ISO, and remove the Country.Name variable. Some countries do not have ISO-3
 # country codes if we use the countrycode() function. That is fine because these
-# coutries will be removed in the final analysis.
+# countries will be removed in the final analysis.
 
 library(countrycode)
-worldbankdata$ISO <- countrycode(worldbankdata$Country.Name, origin = "country.name", destination = "iso3c")
+worldbankdata$ISO <- countrycode(worldbankdata$Country.Name, 
+                                 origin = "country.name", destination = "iso3c")
 worldbankdata <- subset(worldbankdata, select = -Country.Name)
