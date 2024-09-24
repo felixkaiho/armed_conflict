@@ -7,19 +7,30 @@
 library(here)
 library(tidyverse)
 
-covariatesdata <- read.csv(here("original", "covariates.csv"), header = TRUE) %>% 
-  rename(Year = year)
+covariatesdata <- read.csv(here("original", "covariates.csv"), header = TRUE) 
 
 source(here("R", "create_maternalmortality.R"))
 source(here("R", "create_disaster.R"))
 source(here("R", "derive_armedconflict.R"))
 
-data_list <- list(worldbankdata, cleandisasterdata, armedconflictdata, covariatesdata)
+# Put all data frames into a list.
 
-mergealldata <- Reduce(function(x, y) merge(x, y, by = c("ISO", "Year"), all = TRUE), data_list)
+data_list <- list(worldbankdata, cleandisasterdata, armedconflictdata)
 
-# Delete all rows that have NA for ISO.
+# Merge all data frames in the list. Usage: left_join(x, y, by = NULL). A
+# left_join() keeps all observations in x.
 
-mergealldata_clean <- mergealldata[!is.na(mergealldata$ISO),]
+mergedata <- data_list %>%
+  reduce(full_join, by = c("ISO", "year"))
+mergealldata <- covariatesdata %>%
+  left_join(mergedata, by = c("ISO", "year"))
 
-write.csv(mergealldata_clean, here("data", "mergealldata.csv"), row.names = FALSE)
+# Fill in NAs with 0's for armcon, drought, earthquake, and totdeath.
+
+mergealldata <- mergealldata %>%
+  mutate(armcon = replace_na(armcon, 0),
+         drought = replace_na(drought, 0),
+         earthquake = replace_na(earthquake, 0),
+         totdeath = replace_na(totdeath, 0))
+
+write.csv(mergealldata, here("data", "mergealldata.csv"), row.names = FALSE)
