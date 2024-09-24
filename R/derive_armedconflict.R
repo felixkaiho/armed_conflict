@@ -7,15 +7,16 @@
 library(here)
 library(tidyverse)
 
-# Add 1 to year because the armed conflict variable was lagged by a year in the analysis
+# The binary armed conflict variable indicates the presence of conflict for each
+# country-year observation (0 = no, < 25 battle-related deaths; 1 = yes, >= 25
+# battle-related deaths). Add 1 to year because the armed conflict variable was
+# lagged by a year in the analysis.
 
 rawconflict <- read.csv(here("original", "conflictdata.csv"), header = TRUE)
 subconflict <- select(rawconflict, ISO, year, best)
 
 armedconflictdata <- subconflict %>%
   group_by(ISO, year) %>%
-  summarise(deaths = sum(best)) %>%
-  mutate(Armed_conflict = if_else(deaths < 25, 0, 1)) %>%
-  mutate(year = year + 1) %>%
-  rename(Year = year) %>%
-  subset(select = -deaths)
+  summarise(totdeath = sum(best)) %>%
+  mutate(armcon = if_else(totdeath < 25, 0, 1)) %>%
+  mutate(year = year + 1)
