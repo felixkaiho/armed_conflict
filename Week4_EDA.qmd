@@ -10,14 +10,18 @@ format: pdf
 #| include: false
 library(here)
 library(tidyverse)
+library(janitor)
+library(corrplot)
 ```
 
+
+List the names of the variables.
 ```{r}
 finaldata <- read.csv(here("data", "mergealldata.csv"), header = TRUE) 
 names(finaldata)
 ```
 
-The main exposure variable is armed conflict. As per the paper, there are 10 covariates, country and year fixed effects, and conflict lagged by 1 year.
+The main exposure variable is armed conflict. As per the paper, there are 10 covariates, country and year fixed effects, and conflict lagged by 1 year. Match my variables to those from the paper.
 
 Corresponding to Table 2 in the paper:
 
@@ -59,19 +63,6 @@ Corresponding to Table 2 in the paper:
 
 -   totdeath = total number of battle related deaths
 
-Check observations from Canada.
-
-```{r}
-finaldata %>% 
-  filter(country_name == "Canada")
-```
-
-Check observations from Ecuador.
-
-```{r}
-finaldata %>% 
-  filter(country_name == "Ecuador")
-```
 
 Determine the classes of the variables.
 
@@ -81,13 +72,21 @@ glimpse(finaldata)
 
 Not clear what OECD2023 stands for. How is it different from OECD?
 
+
+Look for duplicated rows.
+```{r}
+get_dupes(finaldata)
+```
+There are no duplicated rows.
+
+
 View the key summary statistics of numeric variables and the number of NA's for the variables.
 
 ```{r}
 summary(finaldata)
 ```
 
-The median of gdp1000 (4.0719) appears to be far from the mean (11.4917). The distribution of gdp1000 may be positively skewed. The median of matmor (66.0) appears to be far from the mean (210.6). The distribution of matmor may be positively skewed. The median of infmor (18.90) appears to be far from the mean (28.90). The distribution of infmor may be positively skewed. The median of un5mor (22.20) appears to be far from the mean (40.50). The distribution of un5mor may be positively skewed. There is a lot of NA's for matmor (426).
+The median of gdp1000 (4.0719) appears to be far from the mean (11.4917). The distribution of gdp1000 may be positively skewed. The median of matmor (66.0) appears to be far from the mean (210.6). The distribution of matmor may be positively skewed. The median of infmor (18.90) appears to be far from the mean (28.90). The distribution of infmor may be positively skewed. The median of un5mor (22.20) appears to be far from the mean (40.50). The distribution of un5mor may be positively skewed. There are a lot of NA's for matmor (426).
 
 ```{r}
 table(finaldata$OECD)
@@ -96,7 +95,6 @@ table(finaldata$OECD)
 OECD is a binary variable. Maybe 0 and 1 represents nonmember and member of OECD, respectively?
 
 Focus on countries with high matmor.
-
 ```{r}
 highmatmor <- finaldata %>% 
   select(country_name, year, matmor) %>% 
@@ -104,3 +102,67 @@ highmatmor <- finaldata %>%
 highmatmor[1:20,]
 ```
 The countries with high matmor do not appear to be developed countries, which make sense.
+
+
+Focus on countries with high un5mor.
+```{r}
+highun5mor <- finaldata %>% 
+  select(country_name, year, un5mor) %>% 
+  arrange(desc(un5mor))
+highun5mor[1:20,]
+```
+The countries with high un5mor do not appear to be developed countries, which make sense.
+
+
+Focus on countries with high infmor.
+```{r}
+highinfmor <- finaldata %>% 
+  select(country_name, year, infmor) %>% 
+  arrange(desc(infmor))
+highinfmor[1:20,]
+```
+The countries with high infmor do not appear to be developed countries, which make sense. Sierra Leone stands out with high matmor, un5mor, and infmor.
+
+
+Focus on countries with high neomor.
+```{r}
+highneomor <- finaldata %>% 
+  select(country_name, year, neomor) %>% 
+  arrange(desc(neomor))
+highneomor[1:20,]
+```
+The countries with high neomor do not appear to be developed countries, which make sense.
+
+Look at the distribution of matmor.
+```{r}
+finaldata %>% 
+  ggplot(aes(x = matmor)) +
+  geom_histogram(bins = 30)
+```
+This suggests the presence of outliers: there are a small number of countries with high matmor.
+
+Group by armcon.
+```{r}
+finaldata %>% 
+  ggplot() +
+  geom_histogram(
+    aes(x = matmor),
+    bins = 30) + 
+  facet_wrap(vars(armcon))
+```
+
+Determine the counts in both responses of armcon.
+```{r}
+table(finaldata$armcon)
+```
+It makes sense that the histogram above has more counts for armcon = 0.
+
+
+Create a correlation matrix of the four mortality rates.
+```{r}
+mortality <- select(finaldata, matmor, un5mor, infmor, neomor)
+mortality.nona <- na.omit(mortality)
+matrix = cor(mortality.nona)
+corrplot(matrix, method = 'number')
+```
+There is very strong positive correlation among the four mortality rates, which makes sense.
