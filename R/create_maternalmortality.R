@@ -11,11 +11,15 @@ library(stringr)
 rawmaternal <- read.csv(here("original", "maternalmortality.csv"), 
                         header = TRUE)
 
-# Subset data.
+# Use select() from the dplyr package to subset data to have only the variables
+# "Country.Name", "X2000" - "X2019". select() reduces the number of columns or
+# variables in the dataset.
 
 submaternal <- select(rawmaternal, Country.Name, X2000:X2019)
 
-# Convert to long format.
+# Convert to long format. Select the columns "X2000" to "X2019", remove the
+# prefix "X" from them, change the name of the variable to "year", change the
+# values to "matmor". Store the "year" variable as numeric.
 
 #rename_with() is a function from dplyr that allows you to modify column names
 #based on a function. str_remove(., "^X") from stringr removes the X at the
@@ -54,16 +58,18 @@ neonatalmortality <- makelong(x = "neonatalmortality.csv",
 under5mortality <- makelong(x = "under5mortality.csv", 
                             y = "un5mor")
 
-# Merge the four data sets into one new data set.
+# Use reduce() and full_join() to merge the four data sets to create one new
+# data set.
 
 worldbankdata <- list(maternalmortality, infantmortality, neonatalmortality, 
                       under5mortality) %>%
   reduce(full_join, by = c("Country.Name", "year")) 
 
-# Add the ISO-3 country code variable to the new data set, call the new variable
-# ISO, and remove the Country.Name variable. Some countries do not have ISO-3
-# country codes if we use the countrycode() function. That is fine because these
-# countries will be removed in the final analysis.
+# Use countrycode() in the "countrycode" package to add the ISO-3 country code
+# variable to the new data set, call the new variable "ISO", and remove the
+# "Country.Name" variable. Some countries do not have ISO-3 country codes if we
+# use the countrycode() function. That is fine because these countries will be
+# removed in the final analysis.
 
 library(countrycode)
 worldbankdata$ISO <- countrycode(worldbankdata$Country.Name, 
