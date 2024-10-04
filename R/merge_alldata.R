@@ -9,6 +9,8 @@ library(tidyverse)
 
 covariatesdata <- read.csv(here("original", "covariates.csv"), header = TRUE) 
 
+# Use source() to call the R scripts that create the individual data sets.
+
 source(here("R", "create_maternalmortality.R"))
 source(here("R", "create_disaster.R"))
 source(here("R", "derive_armedconflict.R"))
@@ -17,8 +19,9 @@ source(here("R", "derive_armedconflict.R"))
 
 data_list <- list(worldbankdata, cleandisasterdata, armedconflictdata)
 
-# Merge all data frames in the list. Usage: left_join(x, y, by = NULL). A
-# left_join() keeps all observations in x.
+# Merge all data frames in the list using reduce() and full_join(). Usage:
+# left_join(x, y, by = NULL). A left_join() keeps all observations in x. Use the
+# variables "ISO" and "year" as keys to join the data.
 
 mergedata <- data_list %>%
   reduce(full_join, by = c("ISO", "year"))
