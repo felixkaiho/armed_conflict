@@ -1,0 +1,83 @@
+---
+title: "Week 5 In-class Assignment"
+author: "Felix Ho"
+date: "2024-10-04"
+format: pdf
+---
+
+```{r}
+#| label: load-packages
+#| include: false
+library(here)
+library(table1)
+library(kableExtra) #Gets nicer table1 LaTeX output.
+library(tidyverse)
+```
+
+Create Table 1 for armed conflict paper.
+
+```{r}
+finaldata <- read.csv(here("data", "mergealldata.csv"), header = TRUE) 
+finaldata$OECDf <- factor(finaldata$OECD, levels = c(1,0), 
+                          labels = c("Member", "Nonmember"))
+finaldata$droughtf <- factor(finaldata$drought, levels = c(1,0), 
+                             labels = c("Presence", "Absence"))
+finaldata$earthquakef <- factor(finaldata$earthquake, levels = c(1,0), 
+                                labels = c("Presence", "Absence"))
+finaldata$armconf <- factor(finaldata$armcon, levels = c(1,0), 
+                            labels = c("Yes", "No"))
+
+label(finaldata$gdp1000) <- "GDP per capita"
+label(finaldata$OECDf) <- "OECD member"
+label(finaldata$popdens) <- "Population density"
+label(finaldata$urban) <- "Urban residence"
+label(finaldata$agedep) <- "Age dependency ratio"
+label(finaldata$male_edu) <- "Male education"
+label(finaldata$temp) <- "Temperature"
+label(finaldata$rainfall1000) <- "Rainfall"
+label(finaldata$droughtf) <- "Droughts"
+label(finaldata$earthquakef) <- "Earthquakes"
+
+label(finaldata$matmor) <- "Maternal mortality ratio per 100,000 live births"
+label(finaldata$infmor) <- "Infant mortality rate per 1,000 live births"
+label(finaldata$neomor) <- "Neonatal mortality rate per 1,000 live births"
+label(finaldata$un5mor) <- "Under-5 mortality rate per 1,000 live births"
+
+# Set up the rows or labels of the table. Group the two "Yes" and "No" strata
+# under a common heading" "Armed conflict exposure".
+
+labels <- list(
+  variables = list(matmor = render.varlabel(finaldata$matmor), 
+                   un5mor = render.varlabel(finaldata$un5mor),
+                   infmor = render.varlabel(finaldata$infmor), 
+                   neomor = render.varlabel(finaldata$neomor),
+                   gdp1000 = render.varlabel(finaldata$gdp1000),
+                   OECDf = render.varlabel(finaldata$OECDf),
+                   popdens = render.varlabel(finaldata$popdens),
+                   urban = render.varlabel(finaldata$urban),
+                   agedep = render.varlabel(finaldata$agedep),
+                   male_edu = render.varlabel(finaldata$male_edu),
+                   temp = render.varlabel(finaldata$temp),
+                   rainfall1000 = render.varlabel(finaldata$rainfall1000),
+                   droughtf = render.varlabel(finaldata$droughtf),
+                   earthquakef = render.varlabel(finaldata$earthquakef)
+                   ), 
+  groups=list("", "Armed conflict exposure"))
+
+# Set up the strata or columns of the table.
+
+strata <- c(list(Total=finaldata), split(finaldata, finaldata$armconf))
+
+# Make all values in the table have 1 decimal place.
+
+custom_render_continuous <- function(x) {
+  sprintf("%.1f (%.1f)", mean(x, na.rm = TRUE), sd(x, na.rm = TRUE))
+}
+
+footnote <- "Data given as mean (standard deviation) for continuous variables or counts (%) for categorical variables."
+
+table1(strata, labels, groupspan=c(1, 2), 
+       caption = "Description of data used in the study", 
+       footnote = footnote,
+       render.continuous = custom_render_continuous, render.missing = NULL)
+```
