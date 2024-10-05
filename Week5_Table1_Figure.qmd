@@ -17,6 +17,7 @@ library(tidyverse)
 Create Table 1 for armed conflict paper.
 
 ```{r}
+#| label: table1
 finaldata <- read.csv(here("data", "mergealldata.csv"), header = TRUE) 
 finaldata$OECDf <- factor(finaldata$OECD, levels = c(1,0), 
                           labels = c("Member", "Nonmember"))
@@ -80,4 +81,45 @@ table1(strata, labels, groupspan=c(1, 2),
        caption = "Description of data used in the study", 
        footnote = footnote,
        render.continuous = custom_render_continuous, render.missing = NULL)
+```
+
+```{r}
+#| label: try-diffmatmor
+#| include: false
+finaldata %>% 
+  select(country_name, ISO, year, matmor) %>% 
+  filter(year < 2018) %>% 
+  arrange(ISO, year) %>% 
+  group_by(ISO) %>% 
+  mutate(diffmatmor = matmor - matmor[1L]) 
+```
+
+\
+\
+\
+\
+\
+\
+Create a figure that shows the trend in maternal mortality for countries that had an increase from 2000 to 2017. First, create a new variable `diffmatmor` that shows the difference between maternal mortality in 2017 and maternal mortality in 2000.
+
+```{r, fig.dim = c(6, 4)}
+#| label: figure
+#| warning: false
+graphdata <- finaldata %>% 
+  select(country_name, year, matmor) %>% 
+  filter(year == c(2000, 2017)) %>% 
+  arrange(country_name, year) %>% 
+  group_by(country_name) %>% 
+  mutate(diffmatmor = matmor - matmor[1L]) %>%
+  filter(diffmatmor > 0)
+
+finaldatag <- finaldata %>% 
+  filter(country_name %in% graphdata$country_name)
+
+finaldatag %>%
+  ggplot(aes(x = year, y = matmor, group = country_name)) +
+  geom_line(aes(color = as.factor(country_name)), alpha = 0.5, lwd = 0.7) +
+  xlim(c(2000,2017)) +
+  scale_y_continuous(trans='log10') +
+  labs(y = "Maternal mortality", x = "Year", color = "Countries")
 ```
