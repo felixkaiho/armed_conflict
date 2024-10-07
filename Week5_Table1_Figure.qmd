@@ -1,8 +1,8 @@
 ---
 title: "Week 5 In-class Assignment"
 author: "Felix Ho"
-date: "2024-10-04"
-format: pdf
+date: "2024-10-07"
+format: docx
 ---
 
 ```{r}
@@ -10,7 +10,8 @@ format: pdf
 #| include: false
 library(here)
 library(table1)
-library(kableExtra) #Gets nicer table1 LaTeX output.
+# library(kableExtra) #Gets nicer `table1` LaTeX output for pdf.
+library(flextable) #Gets nicer `table1` .docx output. 
 library(tidyverse)
 ```
 
@@ -71,17 +72,21 @@ strata <- c(list(Total=finaldata), split(finaldata, finaldata$armconf))
 
 # Make all values in the table have 1 decimal place.
 
-custom_render_continuous <- function(x) {
-  sprintf("%.1f (%.1f)", mean(x, na.rm = TRUE), sd(x, na.rm = TRUE))
+my_summary <- function(x) {
+  # Remove NAs before calculation.
+  x <- na.omit(x)
+  # Calculate median, 25th and 75th percentiles.
+  q <- quantile(x, probs = c(0.25, 0.5, 0.75))
+  # Format the output as "median [25th%, 75th%]" with 1 decimal place.
+  sprintf("%.1f [%.1f, %.1f]", q[2], q[1], q[3])
 }
 
-footnote <- "Data given as mean (standard deviation) for continuous variables or counts (%) for categorical variables."
-
 table1(strata, labels, groupspan=c(1, 2), 
-       caption = "Description of data used in the study", 
-       footnote = footnote,
-       render.continuous = custom_render_continuous, render.missing = NULL)
+       caption = "Table 1: Description of data used in the study", 
+       footnote = "Data given as median [25th percentile, 75th percentile] for continuous variables or counts (%) for categorical variables.",
+       render.continuous = my_summary, render.missing = NULL)
 ```
+
 
 ```{r}
 #| label: try-diffmatmor
@@ -93,12 +98,6 @@ finaldata %>%
   group_by(ISO) %>% 
   mutate(diffmatmor = matmor - matmor[1L]) 
 ```
-
-\
-\
-\
-\
-\
 \
 Create a figure that shows the trend in maternal mortality for countries that had an increase from 2000 to 2017. First, create a new variable `diffmatmor` that shows the difference between maternal mortality in 2017 and maternal mortality in 2000.
 
