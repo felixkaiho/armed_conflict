@@ -20,55 +20,50 @@ Create Table 1 for armed conflict paper.
 ```{r}
 #| label: table1
 finaldata <- read.csv(here("data", "mergealldata.csv"), header = TRUE) 
-finaldata$OECDf <- factor(finaldata$OECD, levels = c(1,0), 
-                          labels = c("Member", "Nonmember"))
-finaldata$droughtf <- factor(finaldata$drought, levels = c(1,0), 
+baseline <- finaldata %>% 
+  filter(year == 2000)
+baseline$OECDf <- factor(baseline$OECD, levels = c(1,0), 
+                          labels = c("Yes", "No"))
+baseline$droughtf <- factor(baseline$drought, levels = c(1,0), 
                              labels = c("Presence", "Absence"))
-finaldata$earthquakef <- factor(finaldata$earthquake, levels = c(1,0), 
+baseline$earthquakef <- factor(baseline$earthquake, levels = c(1,0), 
                                 labels = c("Presence", "Absence"))
-finaldata$armconf <- factor(finaldata$armcon, levels = c(1,0), 
+baseline$armconf <- factor(baseline$armcon, levels = c(1,0), 
                             labels = c("Yes", "No"))
 
-label(finaldata$gdp1000) <- "GDP per capita"
-label(finaldata$OECDf) <- "OECD member"
-label(finaldata$popdens) <- "Population density"
-label(finaldata$urban) <- "Urban residence"
-label(finaldata$agedep) <- "Age dependency ratio"
-label(finaldata$male_edu) <- "Male education"
-label(finaldata$temp) <- "Temperature"
-label(finaldata$rainfall1000) <- "Rainfall"
-label(finaldata$droughtf) <- "Droughts"
-label(finaldata$earthquakef) <- "Earthquakes"
+label(baseline$gdp1000) <- "GDP per capita"
+label(baseline$OECDf) <- "OECD member"
+label(baseline$popdens) <- "Population density"
+label(baseline$urban) <- "Urban residence"
+label(baseline$agedep) <- "Age dependency ratio"
+label(baseline$male_edu) <- "Male education"
+label(baseline$temp) <- "Mean population-weighted annual temperature"
+label(baseline$rainfall1000) <- "Mean population-weighted annual rainfall"
+label(baseline$droughtf) <- "Droughts"
+label(baseline$earthquakef) <- "Earthquakes"
 
-label(finaldata$matmor) <- "Maternal mortality ratio per 100,000 live births"
-label(finaldata$infmor) <- "Infant mortality rate per 1,000 live births"
-label(finaldata$neomor) <- "Neonatal mortality rate per 1,000 live births"
-label(finaldata$un5mor) <- "Under-5 mortality rate per 1,000 live births"
+units(baseline$gdp1000) <- "USD"
 
 # Set up the rows or labels of the table. Group the two "Yes" and "No" strata
 # under a common heading" "Armed conflict exposure".
 
 labels <- list(
-  variables = list(matmor = render.varlabel(finaldata$matmor), 
-                   un5mor = render.varlabel(finaldata$un5mor),
-                   infmor = render.varlabel(finaldata$infmor), 
-                   neomor = render.varlabel(finaldata$neomor),
-                   gdp1000 = render.varlabel(finaldata$gdp1000),
-                   OECDf = render.varlabel(finaldata$OECDf),
-                   popdens = render.varlabel(finaldata$popdens),
-                   urban = render.varlabel(finaldata$urban),
-                   agedep = render.varlabel(finaldata$agedep),
-                   male_edu = render.varlabel(finaldata$male_edu),
-                   temp = render.varlabel(finaldata$temp),
-                   rainfall1000 = render.varlabel(finaldata$rainfall1000),
-                   droughtf = render.varlabel(finaldata$droughtf),
-                   earthquakef = render.varlabel(finaldata$earthquakef)
+  variables = list(gdp1000 = render.varlabel(baseline$gdp1000),
+                   OECDf = render.varlabel(baseline$OECDf),
+                   popdens = render.varlabel(baseline$popdens),
+                   urban = render.varlabel(baseline$urban),
+                   agedep = render.varlabel(baseline$agedep),
+                   male_edu = render.varlabel(baseline$male_edu),
+                   temp = render.varlabel(baseline$temp),
+                   rainfall1000 = render.varlabel(baseline$rainfall1000),
+                   droughtf = render.varlabel(baseline$droughtf),
+                   earthquakef = render.varlabel(baseline$earthquakef)
                    ), 
-  groups=list("", "Armed conflict exposure"))
+  groups=list("", "Armed conflict in 2000"))
 
 # Set up the strata or columns of the table.
 
-strata <- c(list(Total=finaldata), split(finaldata, finaldata$armconf))
+strata <- c(list(Total=baseline), split(baseline, baseline$armconf))
 
 # Make all values in the table have 1 decimal place.
 
@@ -84,7 +79,7 @@ my_summary <- function(x) {
 table1(strata, labels, groupspan=c(1, 2), 
        caption = "Table 1: Description of data used in the study", 
        footnote = "Data given as median [25th percentile, 75th percentile] for continuous variables or counts (%) for categorical variables.",
-       render.continuous = my_summary, render.missing = NULL)
+       render.continuous = my_summary)
 ```
 
 
@@ -105,11 +100,17 @@ Create a figure that shows the trend in maternal mortality for countries that ha
 #| label: figure
 #| warning: false
 graphdata <- finaldata %>% 
+  # Only select the variables needed to create the figure.
   select(country_name, year, matmor) %>% 
+  # Select years 2000 to 2017.
   filter(year == c(2000, 2017)) %>% 
+  # Sort data by country and increasing year.
   arrange(country_name, year) %>% 
+  # Group by country.
   group_by(country_name) %>% 
+  # Create a new variable diffmatmor that takes the difference between each year and the baseline year.
   mutate(diffmatmor = matmor - matmor[1L]) %>%
+  # Only include countries that had an increase in mortality from 2000 to 2017.
   filter(diffmatmor > 0)
 
 finaldatag <- finaldata %>% 
@@ -119,6 +120,7 @@ finaldatag %>%
   ggplot(aes(x = year, y = matmor, group = country_name)) +
   geom_line(aes(color = as.factor(country_name)), alpha = 0.5, lwd = 0.7) +
   xlim(c(2000,2017)) +
+  # Use log 10 scale for y axis.
   scale_y_continuous(trans='log10') +
-  labs(y = "Maternal mortality", x = "Year", color = "Countries")
+  labs(y = "Maternal mortality (log 10 scale)", x = "Year", color = "Countries", title = "Maternal mortality trend of countries with increase from 2000-2017")
 ```
