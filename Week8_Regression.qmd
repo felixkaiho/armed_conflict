@@ -3,6 +3,7 @@ title: "Week 8 In-Class Assignment"
 author: "Felix Ho"
 date: "2024-10-28"
 format: html
+embed-resources: true
 ---
 
 ```{r}
