@@ -3115,119 +3115,34 @@ vertical-align: -.125em;
 </header>
 
 
-<p>Fit a fixed effects model with lm() where we add fixed effects for country:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>lmmod <span class="ot">&lt;-</span> <span class="fu">lm</span>(matmor <span class="sc">~</span> <span class="sc">-</span><span class="dv">1</span> <span class="sc">+</span> armcon <span class="sc">+</span> gdp1000 <span class="sc">+</span> OECD <span class="sc">+</span> popdens <span class="sc">+</span> urban <span class="sc">+</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>              agedep <span class="sc">+</span> male_edu <span class="sc">+</span> temp <span class="sc">+</span> rainfall1000 <span class="sc">+</span> earthquake <span class="sc">+</span> drought <span class="sc">+</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>              ISO, </span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">data =</span> mergealldata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Fit a fixed effects model with plm() where we add fixed effects for country:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>plmmod <span class="ot">&lt;-</span> <span class="fu">plm</span>(matmor <span class="sc">~</span> armcon <span class="sc">+</span> gdp1000 <span class="sc">+</span> OECD <span class="sc">+</span> popdens <span class="sc">+</span> urban <span class="sc">+</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                agedep <span class="sc">+</span> male_edu <span class="sc">+</span> temp <span class="sc">+</span> rainfall1000 <span class="sc">+</span> earthquake <span class="sc">+</span> drought,</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;ISO&quot;</span>), <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">data =</span> mergealldata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Compare the coefficients:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(plmmod<span class="sc">$</span>coefficients, <span class="dv">7</span>) <span class="sc">==</span> <span class="fu">round</span>(lmmod<span class="sc">$</span>coefficients[<span class="dv">1</span><span class="sc">:</span><span class="dv">11</span>], <span class="dv">7</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>      armcon      gdp1000         OECD      popdens        urban       agedep 
-        TRUE         TRUE         TRUE         TRUE         TRUE         TRUE 
-    male_edu         temp rainfall1000   earthquake      drought 
-        TRUE         TRUE         TRUE         TRUE         TRUE </code></pre>
-</div>
-</div>
-<p>Round the coefficients to 7 decimal places and see if all 11 coefficients are equal between the 2 models.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(<span class="fu">round</span>(plmmod<span class="sc">$</span>coefficients, <span class="dv">7</span>), <span class="fu">round</span>(lmmod<span class="sc">$</span>coefficients[<span class="dv">1</span><span class="sc">:</span><span class="dv">11</span>], <span class="dv">7</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] TRUE</code></pre>
-</div>
-</div>
-<p>The coefficients are identical for these two models.</p>
-<p>Fit a fixed effects model where we also add fixed effects for year:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>lmmod1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(matmor <span class="sc">~</span> <span class="sc">-</span><span class="dv">1</span> <span class="sc">+</span> armcon <span class="sc">+</span> gdp1000 <span class="sc">+</span> OECD <span class="sc">+</span> popdens <span class="sc">+</span> urban <span class="sc">+</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>              agedep <span class="sc">+</span> male_edu <span class="sc">+</span> temp <span class="sc">+</span> rainfall1000 <span class="sc">+</span> earthquake <span class="sc">+</span> drought <span class="sc">+</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>              ISO <span class="sc">+</span> <span class="fu">as.factor</span>(year), </span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">data =</span> mergealldata)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>plmmod1 <span class="ot">&lt;-</span> <span class="fu">plm</span>(matmor <span class="sc">~</span> armcon <span class="sc">+</span> gdp1000 <span class="sc">+</span> OECD <span class="sc">+</span> popdens <span class="sc">+</span> urban <span class="sc">+</span> </span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>                agedep <span class="sc">+</span> male_edu <span class="sc">+</span> temp <span class="sc">+</span> rainfall1000 <span class="sc">+</span> earthquake <span class="sc">+</span> drought,</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;ISO&quot;</span>, <span class="st">&quot;year&quot;</span>),</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>              <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>,</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">model =</span> <span class="st">&quot;within&quot;</span>,</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> mergealldata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Compare the coefficients:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(plmmod1<span class="sc">$</span>coefficients, <span class="dv">7</span>) <span class="sc">==</span> <span class="fu">round</span>(lmmod1<span class="sc">$</span>coefficients[<span class="dv">1</span><span class="sc">:</span><span class="dv">11</span>], <span class="dv">7</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>      armcon      gdp1000         OECD      popdens        urban       agedep 
-        TRUE         TRUE         TRUE         TRUE         TRUE         TRUE 
-    male_edu         temp rainfall1000   earthquake      drought 
-        TRUE         TRUE         TRUE         TRUE         TRUE </code></pre>
-</div>
-</div>
-<p>Round the coefficients to 7 decimal places and see if all 11 coefficients are equal between the 2 models.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(<span class="fu">round</span>(plmmod1<span class="sc">$</span>coefficients, <span class="dv">7</span>), <span class="fu">round</span>(lmmod1<span class="sc">$</span>coefficients[<span class="dv">1</span><span class="sc">:</span><span class="dv">11</span>], <span class="dv">7</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] TRUE</code></pre>
-</div>
-</div>
-<p>The coefficients are identical for these two models.</p>
-<p>Find the coefficient for GDP:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>plmmod1<span class="sc">$</span>coefficients</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>      armcon      gdp1000         OECD      popdens        urban       agedep 
-  36.9975156    2.9753608   26.1227810   -0.5402709   -6.0365168   -0.4654428 
-    male_edu         temp rainfall1000   earthquake      drought 
- -42.9202487    9.9372352   -2.1618651    3.9037552   -0.7796711 </code></pre>
-</div>
-</div>
-<p>It is 2.9753608.</p>
-<p>Models for other outcomes:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>preds <span class="ot">&lt;-</span> <span class="fu">as.formula</span>(<span class="st">&quot; ~ armcon + gdp1000 + OECD + popdens + urban + </span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="st">                  agedep + male_edu + temp + rainfall1000 + earthquake + drought + </span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="st">                  ISO + as.factor(year)&quot;</span>)</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>matmormod <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">update.formula</span>(preds, matmor <span class="sc">~</span> .), <span class="at">data =</span> mergealldata)</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>un5mormod <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">update.formula</span>(preds, un5mor <span class="sc">~</span> .), <span class="at">data =</span> mergealldata)</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>infmormod <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">update.formula</span>(preds, infmor <span class="sc">~</span> .), <span class="at">data =</span> mergealldata)</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>neomormod <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">update.formula</span>(preds, neomor <span class="sc">~</span> .), <span class="at">data =</span> mergealldata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
 <p>Log transform GDP and use it as one of the predictors. Fit the four mortality models using plm().</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>preds1 <span class="ot">&lt;-</span> <span class="fu">as.formula</span>(<span class="st">&quot; ~ armcon + log(gdp1000) + OECD + popdens + urban + </span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="st">                  agedep + male_edu + temp + rainfall1000 + earthquake + drought&quot;</span>)</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>matmormod1 <span class="ot">&lt;-</span> <span class="fu">plm</span>(<span class="fu">update.formula</span>(preds1, matmor <span class="sc">~</span> .), <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;ISO&quot;</span>, <span class="st">&quot;year&quot;</span>),</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">data =</span> mergealldata)</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>un5mormod1 <span class="ot">&lt;-</span> <span class="fu">plm</span>(<span class="fu">update.formula</span>(preds1, un5mor <span class="sc">~</span> .), <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;ISO&quot;</span>, <span class="st">&quot;year&quot;</span>),</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>                  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">data =</span> mergealldata)</span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>infmormod1 <span class="ot">&lt;-</span> <span class="fu">plm</span>(<span class="fu">update.formula</span>(preds1, infmor <span class="sc">~</span> .), <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;ISO&quot;</span>, <span class="st">&quot;year&quot;</span>),</span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>                  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">data =</span> mergealldata)</span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>neomormod1 <span class="ot">&lt;-</span> <span class="fu">plm</span>(<span class="fu">update.formula</span>(preds1, neomor <span class="sc">~</span> .), <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;ISO&quot;</span>, <span class="st">&quot;year&quot;</span>),</span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>                  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">data =</span> mergealldata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>preds1 <span class="ot">&lt;-</span> <span class="fu">as.formula</span>(<span class="st">&quot; ~ armcon + log(gdp1000) + OECD + popdens + urban + </span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="st">                  agedep + male_edu + temp + rainfall1000 + earthquake + drought&quot;</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>matmormod1 <span class="ot">&lt;-</span> <span class="fu">plm</span>(<span class="fu">update.formula</span>(preds1, matmor <span class="sc">~</span> .), <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;ISO&quot;</span>, <span class="st">&quot;year&quot;</span>),</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">data =</span> mergealldata)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>un5mormod1 <span class="ot">&lt;-</span> <span class="fu">plm</span>(<span class="fu">update.formula</span>(preds1, un5mor <span class="sc">~</span> .), <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;ISO&quot;</span>, <span class="st">&quot;year&quot;</span>),</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>                  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">data =</span> mergealldata)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>infmormod1 <span class="ot">&lt;-</span> <span class="fu">plm</span>(<span class="fu">update.formula</span>(preds1, infmor <span class="sc">~</span> .), <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;ISO&quot;</span>, <span class="st">&quot;year&quot;</span>),</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>                  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">data =</span> mergealldata)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>neomormod1 <span class="ot">&lt;-</span> <span class="fu">plm</span>(<span class="fu">update.formula</span>(preds1, neomor <span class="sc">~</span> .), <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;ISO&quot;</span>, <span class="st">&quot;year&quot;</span>),</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">data =</span> mergealldata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Create a table similar to Table 2 in the paper for only the binary armed conflict specification.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">stargazer</span>(matmormod1, un5mormod1, infmormod1, neomormod1, <span class="at">type =</span> <span class="st">&quot;text&quot;</span>, <span class="at">ci =</span> <span class="cn">TRUE</span>, </span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>          <span class="at">ci.level =</span> <span class="fl">0.95</span>, <span class="at">omit.stat =</span> <span class="fu">c</span>(<span class="st">&quot;rsq&quot;</span>, <span class="st">&quot;f&quot;</span>, <span class="st">&quot;ser&quot;</span>, <span class="st">&quot;adj.rsq&quot;</span>), </span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">column.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Maternal mortality ratio&quot;</span>, </span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>                            <span class="st">&quot;Under-5 mortality rate&quot;</span>, </span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>                            <span class="st">&quot;Infant mortality rate&quot;</span>, </span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>                            <span class="st">&quot;Neonatal mortality rate&quot;</span>), </span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>          <span class="at">covariate.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Armed conflict - binary&quot;</span>, <span class="st">&quot;log(GDP per capita)&quot;</span>, </span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>                               <span class="st">&quot;OECD member&quot;</span>, <span class="st">&quot;Population density&quot;</span>, <span class="st">&quot;Urban residence&quot;</span>, </span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>                               <span class="st">&quot;Age dependency ratio&quot;</span>, <span class="st">&quot;Male education&quot;</span>, <span class="st">&quot;Temperature&quot;</span>, </span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>                               <span class="st">&quot;Rainfall&quot;</span>, <span class="st">&quot;Earthquakes&quot;</span>, <span class="st">&quot;Droughts&quot;</span>), </span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>          <span class="at">title =</span> <span class="st">&quot;Table: The association between armed conflict and maternal and child mortality (adjusted beta coefficients, 95% confidence intervals)&quot;</span>, </span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>          <span class="at">dep.var.labels =</span> <span class="st">&quot; &quot;</span>, <span class="at">align =</span> <span class="cn">TRUE</span>, <span class="at">no.space =</span> <span class="cn">TRUE</span>, <span class="at">single.row =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">stargazer</span>(matmormod1, un5mormod1, infmormod1, neomormod1, <span class="at">type =</span> <span class="st">&quot;text&quot;</span>, <span class="at">ci =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>          <span class="at">ci.level =</span> <span class="fl">0.95</span>, <span class="at">omit.stat =</span> <span class="fu">c</span>(<span class="st">&quot;rsq&quot;</span>, <span class="st">&quot;f&quot;</span>, <span class="st">&quot;ser&quot;</span>, <span class="st">&quot;adj.rsq&quot;</span>), </span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">column.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Maternal mortality ratio&quot;</span>, </span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                            <span class="st">&quot;Under-5 mortality rate&quot;</span>, </span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                            <span class="st">&quot;Infant mortality rate&quot;</span>, </span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                            <span class="st">&quot;Neonatal mortality rate&quot;</span>), </span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>          <span class="at">covariate.labels =</span> <span class="fu">c</span>(<span class="st">&quot;Armed conflict - binary&quot;</span>, <span class="st">&quot;log(GDP per capita)&quot;</span>, </span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                               <span class="st">&quot;OECD member&quot;</span>, <span class="st">&quot;Population density&quot;</span>, <span class="st">&quot;Urban residence&quot;</span>, </span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                               <span class="st">&quot;Age dependency ratio&quot;</span>, <span class="st">&quot;Male education&quot;</span>, <span class="st">&quot;Temperature&quot;</span>, </span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                               <span class="st">&quot;Rainfall&quot;</span>, <span class="st">&quot;Earthquakes&quot;</span>, <span class="st">&quot;Droughts&quot;</span>), </span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>          <span class="at">title =</span> <span class="st">&quot;Table: The association between armed conflict and maternal and child mortality (adjusted beta coefficients, 95% confidence intervals)&quot;</span>, </span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>          <span class="at">dep.var.labels =</span> <span class="st">&quot; &quot;</span>, <span class="at">align =</span> <span class="cn">TRUE</span>, <span class="at">no.space =</span> <span class="cn">TRUE</span>, <span class="at">single.row =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Table: The association between armed conflict and maternal and child mortality (adjusted beta coefficients, 95% confidence intervals)
