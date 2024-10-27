@@ -22,87 +22,7 @@ library(stargazer)
 source(here("R", "merge_alldata.R"))
 ```
 
-Fit a fixed effects model with lm() where we add fixed effects for country:
 
-```{r}
-lmmod <- lm(matmor ~ -1 + armcon + gdp1000 + OECD + popdens + urban +
-              agedep + male_edu + temp + rainfall1000 + earthquake + drought +
-              ISO, 
-            data = mergealldata)
-```
-
-Fit a fixed effects model with plm() where we add fixed effects for country:
-
-```{r}
-plmmod <- plm(matmor ~ armcon + gdp1000 + OECD + popdens + urban +
-                agedep + male_edu + temp + rainfall1000 + earthquake + drought,
-              index = c("ISO"), model = "within", data = mergealldata)
-```
-
-Compare the coefficients:
-
-```{r}
-round(plmmod$coefficients, 7) == round(lmmod$coefficients[1:11], 7) 
-```
-
-Round the coefficients to 7 decimal places and see if all 11 coefficients are equal between the 2 models.
-
-```{r}
-identical(round(plmmod$coefficients, 7), round(lmmod$coefficients[1:11], 7)) 
-```
-
-The coefficients are identical for these two models.
-
-Fit a fixed effects model where we also add fixed effects for year:
-
-```{r}
-lmmod1 <- lm(matmor ~ -1 + armcon + gdp1000 + OECD + popdens + urban +
-              agedep + male_edu + temp + rainfall1000 + earthquake + drought +
-              ISO + as.factor(year), 
-            data = mergealldata)
-
-plmmod1 <- plm(matmor ~ armcon + gdp1000 + OECD + popdens + urban + 
-                agedep + male_edu + temp + rainfall1000 + earthquake + drought,
-              index = c("ISO", "year"),
-              effect = "twoways",
-              model = "within",
-              data = mergealldata)
-```
-
-Compare the coefficients:
-
-```{r}
-round(plmmod1$coefficients, 7) == round(lmmod1$coefficients[1:11], 7) 
-```
-
-Round the coefficients to 7 decimal places and see if all 11 coefficients are equal between the 2 models.
-
-```{r}
-identical(round(plmmod1$coefficients, 7), round(lmmod1$coefficients[1:11], 7)) 
-```
-
-The coefficients are identical for these two models.
-
-Find the coefficient for GDP:
-
-```{r}
-plmmod1$coefficients
-```
-
-It is 2.9753608.
-
-Models for other outcomes:
-
-```{r}
-preds <- as.formula(" ~ armcon + gdp1000 + OECD + popdens + urban + 
-                  agedep + male_edu + temp + rainfall1000 + earthquake + drought + 
-                  ISO + as.factor(year)")
-
-matmormod <- lm(update.formula(preds, matmor ~ .), data = mergealldata)
-un5mormod <- lm(update.formula(preds, un5mor ~ .), data = mergealldata)
-infmormod <- lm(update.formula(preds, infmor ~ .), data = mergealldata)
-neomormod <- lm(update.formula(preds, neomor ~ .), data = mergealldata)
-```
 
 Log transform GDP and use it as one of the predictors. Fit the four mortality models using plm().
 
@@ -119,6 +39,8 @@ infmormod1 <- plm(update.formula(preds1, infmor ~ .), index = c("ISO", "year"),
 neomormod1 <- plm(update.formula(preds1, neomor ~ .), index = c("ISO", "year"),
                   effect = "twoways", model = "within", data = mergealldata)
 ```
+
+
 
 Create a table similar to Table 2 in the paper for only the binary armed conflict specification.
 ```{r}
