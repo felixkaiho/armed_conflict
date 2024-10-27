@@ -1,0 +1,137 @@
+---
+title: "Week 8 In-Class Assignment"
+author: "Felix Ho"
+date: "2024-10-28"
+format: html
+---
+
+```{r}
+#| include: false
+library(here)
+library(tidyverse)
+library(plm)
+library(stargazer)
+```
+
+
+
+```{r}
+#| include: false
+# Use source() to call the R script that creates a data set.
+source(here("R", "merge_alldata.R"))
+```
+
+Fit a fixed effects model with lm() where we add fixed effects for country:
+
+```{r}
+lmmod <- lm(matmor ~ -1 + armcon + gdp1000 + OECD + popdens + urban +
+              agedep + male_edu + temp + rainfall1000 + earthquake + drought +
+              ISO, 
+            data = mergealldata)
+```
+
+Fit a fixed effects model with plm() where we add fixed effects for country:
+
+```{r}
+plmmod <- plm(matmor ~ armcon + gdp1000 + OECD + popdens + urban +
+                agedep + male_edu + temp + rainfall1000 + earthquake + drought,
+              index = c("ISO"), model = "within", data = mergealldata)
+```
+
+Compare the coefficients:
+
+```{r}
+round(plmmod$coefficients, 7) == round(lmmod$coefficients[1:11], 7) 
+```
+
+Round the coefficients to 7 decimal places and see if all 11 coefficients are equal between the 2 models.
+
+```{r}
+identical(round(plmmod$coefficients, 7), round(lmmod$coefficients[1:11], 7)) 
+```
+
+The coefficients are identical for these two models.
+
+Fit a fixed effects model where we also add fixed effects for year:
+
+```{r}
+lmmod1 <- lm(matmor ~ -1 + armcon + gdp1000 + OECD + popdens + urban +
+              agedep + male_edu + temp + rainfall1000 + earthquake + drought +
+              ISO + as.factor(year), 
+            data = mergealldata)
+
+plmmod1 <- plm(matmor ~ armcon + gdp1000 + OECD + popdens + urban + 
+                agedep + male_edu + temp + rainfall1000 + earthquake + drought,
+              index = c("ISO", "year"),
+              effect = "twoways",
+              model = "within",
+              data = mergealldata)
+```
+
+Compare the coefficients:
+
+```{r}
+round(plmmod1$coefficients, 7) == round(lmmod1$coefficients[1:11], 7) 
+```
+
+Round the coefficients to 7 decimal places and see if all 11 coefficients are equal between the 2 models.
+
+```{r}
+identical(round(plmmod1$coefficients, 7), round(lmmod1$coefficients[1:11], 7)) 
+```
+
+The coefficients are identical for these two models.
+
+Find the coefficient for GDP:
+
+```{r}
+plmmod1$coefficients
+```
+
+It is 2.9753608.
+
+Models for other outcomes:
+
+```{r}
+preds <- as.formula(" ~ armcon + gdp1000 + OECD + popdens + urban + 
+                  agedep + male_edu + temp + rainfall1000 + earthquake + drought + 
+                  ISO + as.factor(year)")
+
+matmormod <- lm(update.formula(preds, matmor ~ .), data = mergealldata)
+un5mormod <- lm(update.formula(preds, un5mor ~ .), data = mergealldata)
+infmormod <- lm(update.formula(preds, infmor ~ .), data = mergealldata)
+neomormod <- lm(update.formula(preds, neomor ~ .), data = mergealldata)
+```
+
+Log transform GDP and use it as one of the predictors. Fit the four mortality models using plm().
+
+```{r}
+preds1 <- as.formula(" ~ armcon + log(gdp1000) + OECD + popdens + urban + 
+                  agedep + male_edu + temp + rainfall1000 + earthquake + drought")
+
+matmormod1 <- plm(update.formula(preds1, matmor ~ .), index = c("ISO", "year"),
+                  effect = "twoways", model = "within", data = mergealldata)
+un5mormod1 <- plm(update.formula(preds1, un5mor ~ .), index = c("ISO", "year"),
+                  effect = "twoways", model = "within", data = mergealldata)
+infmormod1 <- plm(update.formula(preds1, infmor ~ .), index = c("ISO", "year"),
+                  effect = "twoways", model = "within", data = mergealldata)
+neomormod1 <- plm(update.formula(preds1, neomor ~ .), index = c("ISO", "year"),
+                  effect = "twoways", model = "within", data = mergealldata)
+```
+
+Create a table similar to Table 2 in the paper for only the binary armed conflict specification.
+```{r}
+stargazer(matmormod1, un5mormod1, infmormod1, neomormod1, type = "text", ci = TRUE, 
+          ci.level = 0.95, omit.stat = c("rsq", "f", "ser", "adj.rsq"), 
+          column.labels = c("Maternal mortality ratio", 
+                            "Under-5 mortality rate", 
+                            "Infant mortality rate", 
+                            "Neonatal mortality rate"), 
+          covariate.labels = c("Armed conflict - binary", "log(GDP per capita)", 
+                               "OECD member", "Population density", "Urban residence", 
+                               "Age dependency ratio", "Male education", "Temperature", 
+                               "Rainfall", "Earthquakes", "Droughts"), 
+          title = "Table: The association between armed conflict and maternal and child mortality (adjusted beta coefficients, 95% confidence intervals)", 
+          dep.var.labels = " ", align = TRUE, no.space = TRUE, single.row = TRUE)
+```
+Set align argument to TRUE, so that coefficients in each column are aligned along the decimal point. Remove all empty lines from the table (using no.space). Use omit.stat to leave out several statistics - R2 ("rsq"), F-statistic ("f"), residual standard error ("ser"), and Adjusted R2 ("adj.rsq"). Use column.labels and covariate.labels arguments to label each of the dependent and independent variables. Report 95 percent confidence intervals (using ci and ci.level). Report the coefficients and confidence intervals on the same row (using single.row). Instead of writing omit.stat = c("rsq", "f", "ser", "adj.rsq"), can write keep.stat = "n" to keep only the number of observations. To produce ASCII text output, rather than LATEX code, write type = "text". Can change the order of the independent variables using the order argument. 
