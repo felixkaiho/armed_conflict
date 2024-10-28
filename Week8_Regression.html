@@ -3117,17 +3117,19 @@ vertical-align: -.125em;
 
 <p>Log transform GDP and use it as one of the predictors. Fit the four mortality models using plm().</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>preds1 <span class="ot">&lt;-</span> <span class="fu">as.formula</span>(<span class="st">&quot; ~ armcon + log(gdp1000) + OECD + popdens + urban + </span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="st">                  agedep + male_edu + temp + rainfall1000 + earthquake + drought&quot;</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>matmormod1 <span class="ot">&lt;-</span> <span class="fu">plm</span>(<span class="fu">update.formula</span>(preds1, matmor <span class="sc">~</span> .), <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;ISO&quot;</span>, <span class="st">&quot;year&quot;</span>),</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">data =</span> mergealldata)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>un5mormod1 <span class="ot">&lt;-</span> <span class="fu">plm</span>(<span class="fu">update.formula</span>(preds1, un5mor <span class="sc">~</span> .), <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;ISO&quot;</span>, <span class="st">&quot;year&quot;</span>),</span>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>mergealldata<span class="sc">$</span>loggdp <span class="ot">&lt;-</span> <span class="fu">log</span>(mergealldata<span class="sc">$</span>gdp1000)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>mergealldata<span class="sc">$</span>popdens <span class="ot">&lt;-</span> mergealldata<span class="sc">$</span>popdens <span class="sc">/</span> <span class="dv">100</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>preds1 <span class="ot">&lt;-</span> <span class="fu">as.formula</span>(<span class="st">&quot; ~ armcon + loggdp + OECD + popdens + urban + </span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="st">                  agedep + male_edu + temp + rainfall1000 + earthquake + drought&quot;</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>matmormod1 <span class="ot">&lt;-</span> <span class="fu">plm</span>(<span class="fu">update.formula</span>(preds1, matmor <span class="sc">~</span> .), <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;ISO&quot;</span>, <span class="st">&quot;year&quot;</span>),</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>                  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">data =</span> mergealldata)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>infmormod1 <span class="ot">&lt;-</span> <span class="fu">plm</span>(<span class="fu">update.formula</span>(preds1, infmor <span class="sc">~</span> .), <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;ISO&quot;</span>, <span class="st">&quot;year&quot;</span>),</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>un5mormod1 <span class="ot">&lt;-</span> <span class="fu">plm</span>(<span class="fu">update.formula</span>(preds1, un5mor <span class="sc">~</span> .), <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;ISO&quot;</span>, <span class="st">&quot;year&quot;</span>),</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>                  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">data =</span> mergealldata)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>neomormod1 <span class="ot">&lt;-</span> <span class="fu">plm</span>(<span class="fu">update.formula</span>(preds1, neomor <span class="sc">~</span> .), <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;ISO&quot;</span>, <span class="st">&quot;year&quot;</span>),</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">data =</span> mergealldata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>infmormod1 <span class="ot">&lt;-</span> <span class="fu">plm</span>(<span class="fu">update.formula</span>(preds1, infmor <span class="sc">~</span> .), <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;ISO&quot;</span>, <span class="st">&quot;year&quot;</span>),</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">data =</span> mergealldata)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>neomormod1 <span class="ot">&lt;-</span> <span class="fu">plm</span>(<span class="fu">update.formula</span>(preds1, neomor <span class="sc">~</span> .), <span class="at">index =</span> <span class="fu">c</span>(<span class="st">&quot;ISO&quot;</span>, <span class="st">&quot;year&quot;</span>),</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>                  <span class="at">effect =</span> <span class="st">&quot;twoways&quot;</span>, <span class="at">model =</span> <span class="st">&quot;within&quot;</span>, <span class="at">data =</span> mergealldata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Create a table similar to Table 2 in the paper for only the binary armed conflict specification.</p>
 <div class="cell">
@@ -3146,28 +3148,28 @@ vertical-align: -.125em;
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Table: The association between armed conflict and maternal and child mortality (adjusted beta coefficients, 95% confidence intervals)
-=======================================================================================================================================
-                                                                      Dependent variable:                                              
-                        ---------------------------------------------------------------------------------------------------------------
-                                                                                                                                       
-                          Maternal mortality ratio      Under-5 mortality rate      Infant mortality rate     Neonatal mortality rate  
-                                     (1)                          (2)                        (3)                        (4)            
----------------------------------------------------------------------------------------------------------------------------------------
-Armed conflict - binary  34.471*** (25.664, 43.278)     2.957*** (1.555, 4.359)    1.646*** (0.932, 2.361)     0.127 (-0.151, 0.405)   
-log(GDP per capita)     -27.488*** (-36.775, -18.201) -8.701*** (-10.139, -7.263) -6.135*** (-6.868, -5.402) -3.175*** (-3.460, -2.890)
-OECD member               28.063* (-2.598, 58.724)     6.617*** (2.151, 11.083)    3.217*** (0.941, 5.494)    1.219*** (0.333, 2.105)  
-Population density         -0.416 (-1.161, 0.328)     -0.344*** (-0.458, -0.231)  -0.182*** (-0.240, -0.125) -0.054*** (-0.076, -0.031)
-Urban residence          -8.297*** (-10.235, -6.360)  -1.736*** (-2.029, -1.443)  -1.008*** (-1.157, -0.858) -0.386*** (-0.444, -0.328)
-Age dependency ratio       -0.601* (-1.259, 0.058)      -0.055 (-0.151, 0.040)      0.045* (-0.004, 0.093)    0.044*** (0.025, 0.063)  
-Male education          -60.627*** (-72.292, -48.963) -9.006*** (-10.675, -7.336) -4.817*** (-5.667, -3.966) -1.325*** (-1.656, -0.994)
-Temperature               10.516*** (4.278, 16.754)     2.423*** (1.414, 3.433)    1.153*** (0.638, 1.667)    0.303*** (0.103, 0.503)  
-Rainfall                   -4.580 (-16.631, 7.471)      -0.038 (-1.947, 1.871)      0.018 (-0.955, 0.991)      -0.131 (-0.509, 0.248)  
-Earthquakes                4.503 (-4.674, 13.681)       1.637** (0.171, 3.103)      0.884** (0.137, 1.631)    0.449*** (0.158, 0.740)  
-Droughts                   -1.256 (-9.445, 6.933)        0.942 (-0.335, 2.219)      0.729** (0.078, 1.380)    0.403*** (0.149, 0.656)  
----------------------------------------------------------------------------------------------------------------------------------------
-Observations                        3,223                        3,618                      3,618                      3,618           
-=======================================================================================================================================
-Note:                                                                                                       *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
+============================================================================================================================================
+                                                                        Dependent variable:                                                 
+                        --------------------------------------------------------------------------------------------------------------------
+                                                                                                                                            
+                          Maternal mortality ratio       Under-5 mortality rate         Infant mortality rate      Neonatal mortality rate  
+                                     (1)                           (2)                           (3)                         (4)            
+--------------------------------------------------------------------------------------------------------------------------------------------
+Armed conflict - binary  34.471*** (25.664, 43.278)      2.957*** (1.555, 4.359)       1.646*** (0.932, 2.361)      0.127 (-0.151, 0.405)   
+log(GDP per capita)     -27.488*** (-36.775, -18.201)  -8.701*** (-10.139, -7.263)   -6.135*** (-6.868, -5.402)   -3.175*** (-3.460, -2.890)
+OECD member               28.063* (-2.598, 58.724)      6.617*** (2.151, 11.083)       3.217*** (0.941, 5.494)     1.219*** (0.333, 2.105)  
+Population density       -41.613 (-116.052, 32.827)   -34.447*** (-45.790, -23.105) -18.249*** (-24.030, -12.469) -5.372*** (-7.622, -3.122)
+Urban residence          -8.297*** (-10.235, -6.360)   -1.736*** (-2.029, -1.443)    -1.008*** (-1.157, -0.858)   -0.386*** (-0.444, -0.328)
+Age dependency ratio       -0.601* (-1.259, 0.058)       -0.055 (-0.151, 0.040)        0.045* (-0.004, 0.093)      0.044*** (0.025, 0.063)  
+Male education          -60.627*** (-72.292, -48.963)  -9.006*** (-10.675, -7.336)   -4.817*** (-5.667, -3.966)   -1.325*** (-1.656, -0.994)
+Temperature               10.516*** (4.278, 16.754)      2.423*** (1.414, 3.433)       1.153*** (0.638, 1.667)     0.303*** (0.103, 0.503)  
+Rainfall                   -4.580 (-16.631, 7.471)       -0.038 (-1.947, 1.871)         0.018 (-0.955, 0.991)       -0.131 (-0.509, 0.248)  
+Earthquakes                4.503 (-4.674, 13.681)        1.637** (0.171, 3.103)        0.884** (0.137, 1.631)      0.449*** (0.158, 0.740)  
+Droughts                   -1.256 (-9.445, 6.933)         0.942 (-0.335, 2.219)        0.729** (0.078, 1.380)      0.403*** (0.149, 0.656)  
+--------------------------------------------------------------------------------------------------------------------------------------------
+Observations                        3,223                         3,618                         3,618                       3,618           
+============================================================================================================================================
+Note:                                                                                                            *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
 </div>
 </div>
 <p>Set align argument to TRUE, so that coefficients in each column are aligned along the decimal point. Remove all empty lines from the table (using no.space). Use omit.stat to leave out several statistics - R2 (“rsq”), F-statistic (“f”), residual standard error (“ser”), and Adjusted R2 (“adj.rsq”). Use column.labels and covariate.labels arguments to label each of the dependent and independent variables. Report 95 percent confidence intervals (using ci and ci.level). Report the coefficients and confidence intervals on the same row (using single.row). Instead of writing omit.stat = c(“rsq”, “f”, “ser”, “adj.rsq”), can write keep.stat = “n” to keep only the number of observations. To produce ASCII text output, rather than LATEX code, write type = “text”. Can change the order of the independent variables using the order argument.</p>
