@@ -27,7 +27,9 @@ source(here("R", "merge_alldata.R"))
 Log transform GDP and use it as one of the predictors. Fit the four mortality models using plm().
 
 ```{r}
-preds1 <- as.formula(" ~ armcon + log(gdp1000) + OECD + popdens + urban + 
+mergealldata$loggdp <- log(mergealldata$gdp1000)
+mergealldata$popdens <- mergealldata$popdens / 100
+preds1 <- as.formula(" ~ armcon + loggdp + OECD + popdens + urban + 
                   agedep + male_edu + temp + rainfall1000 + earthquake + drought")
 
 matmormod1 <- plm(update.formula(preds1, matmor ~ .), index = c("ISO", "year"),
