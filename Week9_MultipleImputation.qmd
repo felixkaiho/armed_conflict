@@ -1,0 +1,147 @@
+---
+title: "Week 9 In-Class Assignment"
+author: "Felix Ho"
+date: "2024-11-4"
+format: html
+embed-resources: true
+---
+
+
+```{r}
+#| include: false
+library(here)
+library(tidyverse)
+library(mice)
+library(texreg)
+```
+
+
+```{r}
+#| include: false
+# Use source() to call the R script that creates a data set.
+source(here("R", "merge_alldata.R"))
+```
+
+
+Log transform GDP and use it as one of the predictors. 
+```{r}
+mergealldata$loggdp <- log(mergealldata$gdp1000)
+mergealldata$pctpopdens <- mergealldata$popdens / 100
+```
+
+
+Apply multiple imputation:
+```{r}
+# Convert ISO to numeric.
+midata <- mergealldata |>
+  mutate(ISOnum = as.numeric(as.factor(mergealldata$ISO))) |>
+  select(-country_name, -ISO)
+
+# Dry run to get meth and pred.
+mice0  <- mice(midata, seed = 100, m = 5, maxit = 0, print = F)
+```
+
+
+Edit meth and pred.
+```{r}
+meth <- mice0$method
+meth[c("urban", "male_edu", "temp", "rainfall1000", "matmor", "infmor", "neomor", "un5mor", "loggdp", "pctpopdens")] <- "2l.lmer"
+
+pred <- mice0$predictorMatrix
+pred[c("urban", "male_edu", "temp", "rainfall1000", "matmor", "infmor", "neomor", "un5mor", "loggdp", "pctpopdens"), "ISOnum"] <- -2
+```
+
+
+Perform multiple imputation with m = 10 imputations:
+```{r}
+#| eval: false
+# This ran for 11 minutes.
+mice.multi.out  <- mice(midata, seed = 100, m = 10, maxit = 20,
+                        method = meth,
+                        predictorMatrix = pred)
+
+# Save the R object "mice.multi.out" as an RData file with .Rda extension.
+save(mice.multi.out, file = here("data", "miceout.Rda"))
+```
+
+
+```{r}
+# Check for convergence.
+load(here("data", "miceout.Rda"))
+plot(mice.multi.out)
+```
+
+
+
+Fit the four regression models using the same 10 imputed data sets using the with() function. plm() cannot be used within with(), so need to use lm().
+```{r}
+fit.matmormod <- with(mice.multi.out,
+                      matmormod <- lm(matmor ~ -1 + armcon + loggdp + OECD + 
+                                        pctpopdens + urban + agedep + male_edu + 
+                                        temp + rainfall1000 + earthquake + 
+                                        drought + ISOnum + as.factor(year)))
+fit.un5mormod <- with(mice.multi.out,
+                      un5mormod <- lm(un5mor ~ -1 + armcon + loggdp + OECD + 
+                                        pctpopdens + urban + agedep + male_edu + 
+                                        temp + rainfall1000 + earthquake + 
+                                        drought + ISOnum + as.factor(year)))
+fit.infmormod <- with(mice.multi.out,
+                      infmormod <- lm(infmor ~ -1 + armcon + loggdp + OECD + 
+                                        pctpopdens + urban + agedep + male_edu + 
+                                        temp + rainfall1000 + earthquake + 
+                                        drought + ISOnum + as.factor(year)))
+fit.neomormod <- with(mice.multi.out,
+                      neomormod <- lm(neomor ~ -1 + armcon + loggdp + OECD + 
+                                        pctpopdens + urban + agedep + male_edu + 
+                                        temp + rainfall1000 + earthquake + 
+                                        drought + ISOnum + as.factor(year)))
+
+# summary(pool(fit.matmormod))
+# summary(pool(fit.un5mormod))
+# summary(pool(fit.infmormod))
+# summary(pool(fit.neomormod))
+
+mi.matmormod <- pool(fit.matmormod)
+mi.un5mormod <- pool(fit.un5mormod)
+mi.infmormod <- pool(fit.infmormod)
+mi.neomormod <- pool(fit.neomormod)
+```
+
+
+Complete case analyses:
+```{r}
+matmormod1 <- lm(matmor ~ -1 + armcon + loggdp + OECD + 
+                                        pctpopdens + urban + agedep + male_edu + 
+                                        temp + rainfall1000 + earthquake + 
+                                        drought + ISOnum + as.factor(year),
+                 data = midata)
+un5mormod1 <- lm(un5mor ~ -1 + armcon + loggdp + OECD + 
+                                        pctpopdens + urban + agedep + male_edu + 
+                                        temp + rainfall1000 + earthquake + 
+                                        drought + ISOnum + as.factor(year),
+                 data = midata)
+infmormod1 <- lm(infmor ~ -1 + armcon + loggdp + OECD + 
+                                        pctpopdens + urban + agedep + male_edu + 
+                                        temp + rainfall1000 + earthquake + 
+                                        drought + ISOnum + as.factor(year),
+                 data = midata)
+neomormod1 <- lm(neomor ~ -1 + armcon + loggdp + OECD + 
+                                        pctpopdens + urban + agedep + male_edu + 
+                                        temp + rainfall1000 + earthquake + 
+                                        drought + ISOnum + as.factor(year),
+                 data = midata)
+```
+
+
+Create a table that shows coefficients and standard errors from complete-case analyses and multiple imputation analysis:
+```{r}
+screenreg(list(matmormod1, mi.matmormod, un5mormod1, mi.un5mormod, infmormod1, mi.infmormod, neomormod1, mi.neomormod), 
+               custom.model.names = c("Maternal mortality ratio (Complete case)",
+                            "Maternal mortality ratio (Multiple imputation)",
+                            "Under-5 mortality rate (Complete case)", 
+                            "Under-5 mortality rate (Multiple imputation)",
+                            "Infant mortality rate (Complete case)", 
+                            "Infant mortality rate (Multiple imputation)",
+                            "Neonatal mortality rate (Complete case)",
+                            "Neonatal mortality rate (Multiple imputation)"))
+```
