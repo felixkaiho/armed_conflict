@@ -8,6 +8,7 @@ embed-resources: true
 
 
 ```{r}
+#| label: load-packages
 #| include: false
 library(here)
 library(tidyverse)
@@ -27,6 +28,8 @@ Log transform GDP and use it as one of the predictors.
 ```{r}
 mergealldata$loggdp <- log(mergealldata$gdp1000)
 mergealldata$pctpopdens <- mergealldata$popdens / 100
+mergealldata <- mergealldata %>% 
+  select(-popdens, -gdp1000)
 ```
 
 
@@ -35,7 +38,7 @@ Apply multiple imputation:
 # Convert ISO to numeric.
 midata <- mergealldata |>
   mutate(ISOnum = as.numeric(as.factor(mergealldata$ISO))) |>
-  select(-country_name, -ISO)
+  select(-country_name, -ISO, -region, -OECD2023)
 
 # Dry run to get meth and pred.
 mice0  <- mice(midata, seed = 100, m = 5, maxit = 0, print = F)
@@ -45,56 +48,56 @@ mice0  <- mice(midata, seed = 100, m = 5, maxit = 0, print = F)
 Edit meth and pred.
 ```{r}
 meth <- mice0$method
-meth[c("urban", "male_edu", "temp", "rainfall1000", "matmor", "infmor", "neomor", "un5mor", "loggdp", "pctpopdens")] <- "2l.lmer"
+meth[c("urban", "male_edu", "temp", "rainfall1000", "matmor", "infmor", "neomor", 
+       "un5mor", "loggdp", "pctpopdens")] <- "2l.lmer"
 
 pred <- mice0$predictorMatrix
-pred[c("urban", "male_edu", "temp", "rainfall1000", "matmor", "infmor", "neomor", "un5mor", "loggdp", "pctpopdens"), "ISOnum"] <- -2
+pred[c("urban", "male_edu", "temp", "rainfall1000", "matmor", "infmor", "neomor", 
+       "un5mor", "loggdp", "pctpopdens"), "ISOnum"] <- -2
 ```
 
 
 Perform multiple imputation with m = 10 imputations:
 ```{r}
 #| eval: false
-# This ran for 11 minutes.
 mice.multi.out  <- mice(midata, seed = 100, m = 10, maxit = 20,
                         method = meth,
                         predictorMatrix = pred)
 
 # Save the R object "mice.multi.out" as an RData file with .Rda extension.
-save(mice.multi.out, file = here("data", "miceout.Rda"))
+save(mice.multi.out, file = here("data", "imputed_data.Rda"))
 ```
 
 
+Check for convergence.
 ```{r}
-# Check for convergence.
-load(here("data", "miceout.Rda"))
+load(here("data", "imputed_data.Rda"))
 plot(mice.multi.out)
 ```
-
 
 
 Fit the four regression models using the same 10 imputed data sets using the with() function. plm() cannot be used within with(), so need to use lm().
 ```{r}
 fit.matmormod <- with(mice.multi.out,
-                      matmormod <- lm(matmor ~ -1 + armcon + loggdp + OECD + 
+                      lm(matmor ~ -1 + armcon + loggdp + OECD + 
                                         pctpopdens + urban + agedep + male_edu + 
                                         temp + rainfall1000 + earthquake + 
-                                        drought + ISOnum + as.factor(year)))
+                                        drought + as.factor(ISOnum) + as.factor(year)))
 fit.un5mormod <- with(mice.multi.out,
-                      un5mormod <- lm(un5mor ~ -1 + armcon + loggdp + OECD + 
+                      lm(un5mor ~ -1 + armcon + loggdp + OECD + 
                                         pctpopdens + urban + agedep + male_edu + 
                                         temp + rainfall1000 + earthquake + 
-                                        drought + ISOnum + as.factor(year)))
+                                        drought + as.factor(ISOnum) + as.factor(year)))
 fit.infmormod <- with(mice.multi.out,
-                      infmormod <- lm(infmor ~ -1 + armcon + loggdp + OECD + 
+                      lm(infmor ~ -1 + armcon + loggdp + OECD + 
                                         pctpopdens + urban + agedep + male_edu + 
                                         temp + rainfall1000 + earthquake + 
-                                        drought + ISOnum + as.factor(year)))
+                                        drought + as.factor(ISOnum) + as.factor(year)))
 fit.neomormod <- with(mice.multi.out,
-                      neomormod <- lm(neomor ~ -1 + armcon + loggdp + OECD + 
+                      lm(neomor ~ -1 + armcon + loggdp + OECD + 
                                         pctpopdens + urban + agedep + male_edu + 
                                         temp + rainfall1000 + earthquake + 
-                                        drought + ISOnum + as.factor(year)))
+                                        drought + as.factor(ISOnum) + as.factor(year)))
 
 # summary(pool(fit.matmormod))
 # summary(pool(fit.un5mormod))
@@ -110,38 +113,37 @@ mi.neomormod <- pool(fit.neomormod)
 
 Complete case analyses:
 ```{r}
-matmormod1 <- lm(matmor ~ -1 + armcon + loggdp + OECD + 
-                                        pctpopdens + urban + agedep + male_edu + 
-                                        temp + rainfall1000 + earthquake + 
-                                        drought + ISOnum + as.factor(year),
-                 data = midata)
-un5mormod1 <- lm(un5mor ~ -1 + armcon + loggdp + OECD + 
-                                        pctpopdens + urban + agedep + male_edu + 
-                                        temp + rainfall1000 + earthquake + 
-                                        drought + ISOnum + as.factor(year),
-                 data = midata)
-infmormod1 <- lm(infmor ~ -1 + armcon + loggdp + OECD + 
-                                        pctpopdens + urban + agedep + male_edu + 
-                                        temp + rainfall1000 + earthquake + 
-                                        drought + ISOnum + as.factor(year),
-                 data = midata)
-neomormod1 <- lm(neomor ~ -1 + armcon + loggdp + OECD + 
-                                        pctpopdens + urban + agedep + male_edu + 
-                                        temp + rainfall1000 + earthquake + 
-                                        drought + ISOnum + as.factor(year),
-                 data = midata)
+preds <- as.formula(" ~ -1 + armcon + loggdp + OECD + pctpopdens + urban + 
+                  agedep + male_edu + temp + rainfall1000 + earthquake + drought + 
+                  as.factor(ISO) + as.factor(year)")
+
+cc.matmormod <- lm(update.formula(preds, matmor ~ .), data = mergealldata)
+cc.un5mormod <- lm(update.formula(preds, un5mor ~ .), data = mergealldata)
+cc.infmormod <- lm(update.formula(preds, infmor ~ .), data = mergealldata)
+cc.neomormod <- lm(update.formula(preds, neomor ~ .), data = mergealldata)
 ```
 
 
-Create a table that shows coefficients and standard errors from complete-case analyses and multiple imputation analysis:
+Create a table that shows coefficients and 95% confidence intervals from complete-case analyses and multiple imputation analyses:
 ```{r}
-screenreg(list(matmormod1, mi.matmormod, un5mormod1, mi.un5mormod, infmormod1, mi.infmormod, neomormod1, mi.neomormod), 
-               custom.model.names = c("Maternal mortality ratio (Complete case)",
-                            "Maternal mortality ratio (Multiple imputation)",
-                            "Under-5 mortality rate (Complete case)", 
-                            "Under-5 mortality rate (Multiple imputation)",
-                            "Infant mortality rate (Complete case)", 
-                            "Infant mortality rate (Multiple imputation)",
-                            "Neonatal mortality rate (Complete case)",
-                            "Neonatal mortality rate (Multiple imputation)"))
+tosave <- list(cc.matmormod, mi.matmormod, cc.un5mormod, mi.un5mormod, cc.infmormod, 
+               mi.infmormod, cc.neomormod, mi.neomormod)
+
+keepvars <- list("armcon" = "Armed conflict - binary",
+                 "loggdp" = "log(GDP)",
+                 "OECD" = "OECD",
+                 "pctpopdens" = "Population density",
+                 "urban" = "Urban residence",
+                 "agedep" = "Age dependency ratio",
+                 "male_edu" = "Male education",
+                 "temp" = "Average temperature",
+                 "rainfall1000" = "Average rainfall",
+                 "earthquake" = "Earthquake",
+                 "drought" = "Drought")
+
+screenreg(tosave, ci.force = TRUE, custom.coef.map = keepvars, 
+          custom.model.names = c("Mat CC", "Mat MI", "Un5 CC", "Un5 MI", "Inf CC", 
+                                 "Inf MI", "Neo CC", "Neo MI"))
+
+save(tosave, file = here("data", "complete-case_mi_output.Rda"))
 ```
