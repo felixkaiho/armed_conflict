@@ -1,0 +1,134 @@
+---
+title: "Week 11 In-Class Assignment"
+author: "Felix Ho"
+date: "2024-11-18"
+format: pdf
+embed-resources: true
+---
+
+```{r}
+#| label: load-package
+#| include: false
+library(here)
+library(boot)
+```
+
+### Compute the 95% bootstrap confidence interval for the difference in medians of infant mortality by armed conflict:
+
+```{r}
+finaldata <- read.csv(here("data", "mergealldata.csv"))
+
+# Infant mortality in 2017 by armed conflict:
+data2017 <- finaldata |>
+  dplyr::filter(year == 2017) |>
+  dplyr::filter(!is.na(infmor)) 
+
+# Compute the difference in medians using the boot package. First write a
+# function for computing the statistic with 2 arguments: first is the original
+# data and second is a vector of indices.
+getmeddiff <- function(data, indices) {
+  sample_data <- data[indices, ]
+  group_meds <- tapply(sample_data$infmor, sample_data$armcon, 
+                       FUN = function(x) median(x,na.rm=TRUE))
+  meddiff <- group_meds[2] - group_meds[1]
+  return(meddiff)
+}
+
+# The strata option ensures that the resampling is done within the specified
+# strata.
+set.seed(2024)
+bootout <- boot(data2017, statistic = getmeddiff, strata = data2017$armcon, 
+                R = 1000)
+bootout
+
+bootout$t0 # The observed value of the statistic applied to data.
+
+boot.ci(boot.out = bootout, conf = 0.95, type = c("basic", "perc", "bca")) 
+# Calculates the bias-corrected and accelerated (BCa) bootstrap CI.
+```
+
+The observed difference in medians of infant mortality by armed conflict is 19.8 in 2017. The corresponding 95% BCa bootstrap CI is (7.74, 30.16). Since the point estimate is greater than 0 and the 95% CI does not include 0, there is sufficient evidence to conclude that the median infant mortality in countries with armed conflict is significantly higher than the median infant mortality in countries without armed conflict in 2017.\
+
+\
+\
+
+### Compute the 95% bootstrap confidence interval for the difference in medians of under-5 mortality by armed conflict:
+
+```{r}
+finaldata <- read.csv(here("data", "mergealldata.csv"))
+
+# Under-5 mortality in 2017 by armed conflict:
+data2017 <- finaldata |>
+  dplyr::filter(year == 2017) |>
+  dplyr::filter(!is.na(un5mor)) 
+
+# Compute the difference in medians using the boot package. First write a
+# function for computing the statistic with 2 arguments: first is the original
+# data and second is a vector of indices.
+getmeddiff <- function(data, indices) {
+  sample_data <- data[indices, ]
+  group_meds <- tapply(sample_data$un5mor, sample_data$armcon, 
+                       FUN = function(x) median(x,na.rm=TRUE))
+  meddiff <- group_meds[2] - group_meds[1]
+  return(meddiff)
+}
+
+# The strata option ensures that the resampling is done within the specified
+# strata.
+set.seed(2024)
+bootout <- boot(data2017, statistic = getmeddiff, strata = data2017$armcon, 
+                R = 1000)
+bootout
+
+bootout$t0 # The observed value of the statistic applied to data.
+
+boot.ci(boot.out = bootout, conf = 0.95, type = c("basic", "perc", "bca")) 
+# Calculates the bias-corrected and accelerated (BCa) bootstrap CI.
+```
+
+The observed difference in medians of under-5 mortality by armed conflict is 28.9 in 2017. The corresponding 95% BCa bootstrap CI is (9.45, 45.80). Since the point estimate is greater than 0 and the 95% CI does not include 0, there is sufficient evidence to conclude that the median under-5 mortality in countries with armed conflict is significantly higher than the median under-5 mortality in countries without armed conflict in 2017.\
+
+\
+\
+\
+\
+\
+\
+\
+\
+
+### Compute the 95% bootstrap confidence interval for the difference in medians of neonatal mortality by armed conflict:
+
+```{r}
+finaldata <- read.csv(here("data", "mergealldata.csv"))
+
+# Neonatal mortality in 2017 by armed conflict:
+data2017 <- finaldata |>
+  dplyr::filter(year == 2017) |>
+  dplyr::filter(!is.na(neomor)) 
+
+# Compute the difference in medians using the boot package. First write a
+# function for computing the statistic with 2 arguments: first is the original
+# data and second is a vector of indices.
+getmeddiff <- function(data, indices) {
+  sample_data <- data[indices, ]
+  group_meds <- tapply(sample_data$neomor, sample_data$armcon, 
+                       FUN = function(x) median(x,na.rm=TRUE))
+  meddiff <- group_meds[2] - group_meds[1]
+  return(meddiff)
+}
+
+# The strata option ensures that the resampling is done within the specified
+# strata.
+set.seed(2024)
+bootout <- boot(data2017, statistic = getmeddiff, strata = data2017$armcon, 
+                R = 1000)
+bootout
+
+bootout$t0 # The observed value of the statistic applied to data.
+
+boot.ci(boot.out = bootout, conf = 0.95, type = c("basic", "perc", "bca")) 
+# Calculates the bias-corrected and accelerated (BCa) bootstrap CI.
+```
+
+The observed difference in medians of neonatal mortality by armed conflict is 11.85 in 2017. The corresponding 95% BCa bootstrap CI is (4.65, 17.45). Since the point estimate is greater than 0 and the 95% CI does not include 0, there is sufficient evidence to conclude that the median neonatal mortality in countries with armed conflict is significantly higher than the median neonatal mortality in countries without armed conflict in 2017.
